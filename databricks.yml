@@ -8,6 +8,18 @@ variables:
     default: geospatial_analytics
   warehouse_id:
     default: 9cd919d96b11bf1c
+  app_name:
+    default: geospatial-signal-quality
+  app_dir:
+    default: /Workspace/Users/max.carduner@databricks.com/geospatial-signal-quality-app
+  genie_space_title:
+    default: "Geospatial — Chandler Fashion Center Signal Analysis"
+  genie_space_description:
+    default: "Live spatial queries on T-Mobile cell signal readings at Chandler Fashion Center using Databricks ST_* functions."
+  genie_parent_path:
+    default: /Shared
+  genie_space_id:
+    default: ""   # leave empty to create; set to update an existing space
 
 targets:
   dev:
@@ -61,3 +73,33 @@ resources:
               catalog: "${var.catalog}"
               schema: "${var.schema}"
               warehouse_id: "${var.warehouse_id}"
+
+        - task_key: build_app
+          description: "Generate Dash app files, create Databricks App, grant permissions, deploy"
+          depends_on:
+            - task_key: run_analysis
+          environment_key: serverless
+          notebook_task:
+            notebook_path: ./notebooks/03_build_app.py
+            base_parameters:
+              catalog: "${var.catalog}"
+              schema: "${var.schema}"
+              warehouse_id: "${var.warehouse_id}"
+              app_name: "${var.app_name}"
+              app_dir: "${var.app_dir}"
+
+        - task_key: create_genie_space
+          description: "Create or update Genie AI/BI space with all 3 geospatial tables and ST function instructions"
+          depends_on:
+            - task_key: run_analysis
+          environment_key: serverless
+          notebook_task:
+            notebook_path: ./notebooks/04_create_genie_space.py
+            base_parameters:
+              catalog: "${var.catalog}"
+              schema: "${var.schema}"
+              warehouse_id: "${var.warehouse_id}"
+              space_title: "${var.genie_space_title}"
+              space_description: "${var.genie_space_description}"
+              parent_path: "${var.genie_parent_path}"
+              genie_space_id: "${var.genie_space_id}"
