@@ -1,0 +1,63 @@
+bundle:
+  name: geospatial-analytics-viz
+
+variables:
+  catalog:
+    default: cmegdemos_catalog
+  schema:
+    default: geospatial_analytics
+  warehouse_id:
+    default: 9cd919d96b11bf1c
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://fevm-cmegdemos.cloud.databricks.com
+      profile: fevm-cmegdemos
+
+  prod:
+    mode: production
+    workspace:
+      host: https://fevm-cmegdemos.cloud.databricks.com
+      profile: fevm-cmegdemos
+      root_path: /Users/max.carduner@databricks.com/.bundle/${bundle.name}/prod
+
+resources:
+  jobs:
+    geospatial_analysis_job:
+      name: "[Geospatial] Chandler Fashion Center Signal Analysis"
+      description: "Loads signal points + building polygons, runs ST intersection, persists tables for Genie"
+      tags:
+        team: tmo
+        domain: geospatial
+
+      environments:
+        - environment_key: serverless
+          spec:
+            client: "5"
+            dependencies:
+              - geopandas>=1.0.0
+
+      tasks:
+        - task_key: setup_tables
+          description: "Persist raw signal points and building polygons as managed Delta tables"
+          environment_key: serverless
+          notebook_task:
+            notebook_path: ./notebooks/01_setup_tables.py
+            base_parameters:
+              catalog: "${var.catalog}"
+              schema: "${var.schema}"
+
+        - task_key: run_analysis
+          description: "ST intersection + signal quality analysis, persists intersected_signal_points"
+          depends_on:
+            - task_key: setup_tables
+          environment_key: serverless
+          notebook_task:
+            notebook_path: ./notebooks/02_analysis.py
+            base_parameters:
+              catalog: "${var.catalog}"
+              schema: "${var.schema}"
+              warehouse_id: "${var.warehouse_id}"
