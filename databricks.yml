@@ -19,7 +19,7 @@ variables:
   genie_parent_path:
     default: /Shared
   genie_space_id:
-    default: ""   # leave empty to create; set to update an existing space
+    default: "01f12b9111a1125faf602bfbd14baf35"
 
 targets:
   dev:
@@ -87,6 +87,7 @@ resources:
               warehouse_id: "${var.warehouse_id}"
               app_name: "${var.app_name}"
               app_dir: "${var.app_dir}"
+              genie_space_id: "${var.genie_space_id}"
 
         - task_key: create_genie_space
           description: "Create or update Genie AI/BI space with all 3 geospatial tables and ST function instructions"
