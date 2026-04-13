@@ -12,6 +12,10 @@ variables:
     default: geospatial-signal-quality
   app_dir:
     default: /Workspace/Users/max.carduner@databricks.com/geospatial-signal-quality-app
+  agent_app_name:
+    default: signal-quality-agent
+  agent_app_dir:
+    default: /Workspace/Users/max.carduner@databricks.com/signal-quality-agent-app
   genie_space_title:
     default: "Geospatial — Chandler Fashion Center Signal Analysis"
   genie_space_description:
@@ -62,6 +66,18 @@ resources:
               catalog: "${var.catalog}"
               schema: "${var.schema}"
 
+        - task_key: run_h3_analysis
+          description: "H3-indexed spatial join — tessellates polygons, joins via H3 cell, refines with ST_Contains"
+          depends_on:
+            - task_key: setup_tables
+          environment_key: serverless
+          notebook_task:
+            notebook_path: ./notebooks/02a_h3_analysis.py
+            base_parameters:
+              catalog: "${var.catalog}"
+              schema: "${var.schema}"
+              h3_resolution: "9"
+
         - task_key: run_analysis
           description: "ST intersection + signal quality analysis, persists intersected_signal_points"
           depends_on:
@@ -87,7 +103,8 @@ resources:
               warehouse_id: "${var.warehouse_id}"
               app_name: "${var.app_name}"
               app_dir: "${var.app_dir}"
-              genie_space_id: "${var.genie_space_id}"
+              agent_app_name: "${var.agent_app_name}"
+              agent_app_dir: "${var.agent_app_dir}"
 
         - task_key: create_genie_space
           description: "Create or update Genie AI/BI space with all 3 geospatial tables and ST function instructions"
