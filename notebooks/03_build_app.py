@@ -251,10 +251,10 @@ with open(os.path.join(AGENT_APP_DIR, "requirements.txt"), "w") as f:
         "fastapi>=0.100.0\n"
         "uvicorn>=0.22.0\n"
         "databricks-sdk>=0.20.0\n"
-        "databricks-langchain>=0.4.0\n"
-        "langgraph>=0.2.0\n"
-        "langchain-core>=0.3.0\n"
-        "mlflow>=2.21.0\n"
+        "databricks-langchain>=0.19.0\n"
+        "langgraph>=1.0.11\n"
+        "langchain-core>=1.3.0\n"
+        "mlflow>=3.11.0\n"
     )
 print("Wrote agent requirements.txt")
 
@@ -313,9 +313,8 @@ print(f"Agent SP      : {agent_sp_name} (ID: {agent_sp_id})")
 
 from databricks.sdk.service.iam import AccessControlRequest, PermissionLevel
 
-agent_sp_details = w.service_principals.get(agent_sp_id)
-agent_sp_app_id  = agent_sp_details.application_id
-print(f"Agent SP application_id : {agent_sp_app_id}")
+agent_sp_app_id = agent_app_info.service_principal_client_id
+print(f"Agent SP client_id : {agent_sp_app_id}")
 
 time.sleep(5)  # let SP propagate
 
@@ -1120,9 +1119,8 @@ print(f"SP      : {sp_name} (ID: {sp_id})")
 
 from databricks.sdk.service.iam import AccessControlRequest, PermissionLevel
 
-sp_details = w.service_principals.get(sp_id)
-sp_app_id  = sp_details.application_id
-print(f"Dash SP application_id : {sp_app_id}")
+sp_app_id = app_info.service_principal_client_id
+print(f"Dash SP client_id : {sp_app_id}")
 
 time.sleep(5)  # let SP propagate
 
